@@ -4,11 +4,9 @@ import os
 
 app = Flask(__name__)
 
-# Google Drive model ID
-MODEL_ID = "1Mi240WxfjMNWJQ6SoWcbWG97pyCDI1xE"
+MODEL_ID = "1Mi240WxfjMNWJQ6SoWcbWG97pyCDI1xE"  # your latest model ID
 MODEL_PATH = "phishing_ml_model.pkl"
 
-# Download model using gdown
 def download_model():
     if not os.path.exists(MODEL_PATH):
         print("📥 Downloading model from Google Drive using gdown...")
@@ -20,7 +18,7 @@ def download_model():
         gdown.download(id=MODEL_ID, output=MODEL_PATH, quiet=False)
         print("✅ Model downloaded.")
 
-# Load the model safely
+# Load model safely
 try:
     download_model()
     model = joblib.load(MODEL_PATH)
@@ -28,7 +26,6 @@ except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
 
-# Predict endpoint
 @app.route("/predict", methods=["POST"])
 def predict():
     if model is None:
@@ -37,16 +34,19 @@ def predict():
     data = request.get_json()
     features = data.get("features", [])
 
-    if not isinstance(features, list) or len(features) != 41:
+    if not features or len(features) != 41:
         return jsonify({"error": "Invalid input. Must contain 41 features."}), 400
 
     try:
         prediction = model.predict([features])[0]
+        proba = model.predict_proba([features])[0][1]  # Confidence of being phishing
         result = "phishing" if prediction == 1 else "legitimate"
-        return jsonify({"result": result})
+        return jsonify({
+            "result": result,
+            "confidence": round(float(proba), 4)
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Run the Flask server
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
