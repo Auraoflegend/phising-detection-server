@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 import joblib
 
 # ✅ Step 1: Load the dataset (already cleaned, no NaNs assumed)
@@ -25,10 +26,15 @@ model = RandomForestClassifier(
 )
 model.fit(X_train, y_train)
 
-# ✅ Step 5: Print accuracy for verification
+# ✅ Step 5: Evaluate model
 print("✅ Training accuracy:", model.score(X_train, y_train))
 print("✅ Test accuracy:", model.score(X_test, y_test))
 
-# ✅ Step 6: Save with compression to reduce file size
+# ✅ Step 6: Classification report
+y_pred = model.predict(X_test)
+print("\n🧪 Classification Report:\n")
+print(classification_report(y_test, y_pred, digits=4))
+
+# ✅ Step 7: Save with compression to reduce file size
 joblib.dump(model, "phishing_ml_model.pkl", compress=3)
 print("✅ Model saved as phishing_ml_model.pkl")
