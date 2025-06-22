@@ -5,11 +5,10 @@ import requests
 
 app = Flask(__name__)
 
-# 📦 Google Drive model file (Direct Download Link)
-MODEL_URL = "https://drive.google.com/file/d/10jqPKx0pVaougdgd4m4g9bviiCOZxLtE/view?usp=sharing"
+# ✅ Use new direct link from Google Drive
+MODEL_URL = "https://drive.google.com/uc?export=download&id=114CSoYogPl9iRTnEm_6NDSOFpA5ROwi8"
 MODEL_PATH = "phishing_ml_model.pkl"
 
-# 🔽 Download model if not present
 def download_model():
     if not os.path.exists(MODEL_PATH):
         print("📥 Downloading model from Google Drive...")
@@ -21,26 +20,24 @@ def download_model():
         else:
             raise Exception(f"❌ Failed to download model: {response.status_code}")
 
-# 🧠 Load the model
+# Load the model
 try:
     download_model()
     model = joblib.load(MODEL_PATH)
-    print("✅ Model loaded successfully.")
 except Exception as e:
-    print("❌ Error loading model:", str(e))
+    print(f"❌ Error loading model: {e}")
     model = None
 
-# 🔍 Prediction API
 @app.route("/predict", methods=["POST"])
 def predict():
-    if not model:
-        return jsonify({"error": "Model not loaded"}), 500
+    if model is None:
+        return jsonify({"error": "Model not available."}), 500
 
     data = request.get_json()
-    features = data.get("features")
+    features = data.get("features", [])
 
     if not features or len(features) != 41:
-        return jsonify({"error": "Invalid input: must provide 41 features."}), 400
+        return jsonify({"error": "Invalid input. Must contain 41 features."}), 400
 
     try:
         prediction = model.predict([features])[0]
@@ -49,6 +46,5 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# 🚀 Run server (for local testing)
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
