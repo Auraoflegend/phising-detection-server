@@ -5,8 +5,8 @@ import requests
 
 app = Flask(__name__)
 
-# ✅ Use new direct link from Google Drive
-MODEL_URL = "https://drive.google.com/uc?export=download&id=114CSoYogPl9iRTnEm_6NDSOFpA5ROwi8"
+# 📦 Google Drive model file (Direct Download Link)
+MODEL_URL = "https://drive.google.com/file/d/10jqPKx0pVaougdgd4m4g9bviiCOZxLtE/view?usp=sharing"
 MODEL_PATH = "phishing_ml_model.pkl"
 
 def download_model():
