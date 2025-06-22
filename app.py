@@ -1,26 +1,24 @@
 from flask import Flask, request, jsonify
 import joblib
 import os
-import requests
 
 app = Flask(__name__)
 
-# 📦 Google Drive model file (Direct Download Link)
-MODEL_URL = "https://drive.google.com/file/d/10jqPKx0pVaougdgd4m4g9bviiCOZxLtE/view?usp=sharing"
+MODEL_ID = "10jqPKx0pVaougdgd4m4g9bviiCOZxLtE"
 MODEL_PATH = "phishing_ml_model.pkl"
 
 def download_model():
     if not os.path.exists(MODEL_PATH):
-        print("📥 Downloading model from Google Drive...")
-        response = requests.get(MODEL_URL)
-        if response.status_code == 200:
-            with open(MODEL_PATH, 'wb') as f:
-                f.write(response.content)
-            print("✅ Model downloaded.")
-        else:
-            raise Exception(f"❌ Failed to download model: {response.status_code}")
+        print("📥 Downloading model from Google Drive using gdown...")
+        try:
+            import gdown
+        except ImportError:
+            os.system("pip install gdown")
+            import gdown
+        gdown.download(id=MODEL_ID, output=MODEL_PATH, quiet=False)
+        print("✅ Model downloaded.")
 
-# Load the model
+# Load model safely
 try:
     download_model()
     model = joblib.load(MODEL_PATH)
