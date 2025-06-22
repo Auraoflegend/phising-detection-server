@@ -4,11 +4,10 @@ import os
 
 app = Flask(__name__)
 
-# === Model Info ===
-MODEL_ID = "1Mi240WxfjMNWJQ6SoWcbWG97pyCDI1xE"
+# === Your new model info ===
+MODEL_ID = "1yVIJXXy5fSNme64nBxJ8MR9A7wotkm8a"
 MODEL_PATH = "phishing_ml_model.pkl"
 
-# === Model Downloader ===
 def download_model():
     if not os.path.exists(MODEL_PATH):
         print("📥 Downloading model from Google Drive using gdown...")
@@ -20,7 +19,6 @@ def download_model():
         gdown.download(id=MODEL_ID, output=MODEL_PATH, quiet=False)
         print("✅ Model downloaded.")
 
-# === Load Model ===
 try:
     download_model()
     model = joblib.load(MODEL_PATH)
@@ -29,7 +27,6 @@ except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
 
-# === Prediction Endpoint ===
 @app.route("/predict", methods=["POST"])
 def predict():
     if model is None:
@@ -52,11 +49,9 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# === Home Route ===
 @app.route("/")
 def index():
     return "🔒 Phishing Detector API is running."
 
-# === Run App Locally or on Render ===
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
