@@ -5,10 +5,11 @@ import requests
 
 app = Flask(__name__)
 
-MODEL_URL = "https://drive.google.com/file/d/13VyiL10Ge6Csk2KoU5vx0sIVfpcKX_BO/view?usp=drive_link"
+# 📦 Google Drive model file (Direct Download Link)
+MODEL_URL = "https://drive.google.com/file/d/10jqPKx0pVaougdgd4m4g9bviiCOZxLtE/view?usp=sharing"
 MODEL_PATH = "phishing_ml_model.pkl"
 
-# Step 1: Download model from Google Drive if not present
+# 🔽 Download model if not present
 def download_model():
     if not os.path.exists(MODEL_PATH):
         print("📥 Downloading model from Google Drive...")
@@ -18,27 +19,36 @@ def download_model():
                 f.write(response.content)
             print("✅ Model downloaded.")
         else:
-            raise Exception(f"❌ Failed to download model, status code: {response.status_code}")
+            raise Exception(f"❌ Failed to download model: {response.status_code}")
 
-# Step 2: Load the model
-download_model()
-model = joblib.load(MODEL_PATH)
+# 🧠 Load the model
+try:
+    download_model()
+    model = joblib.load(MODEL_PATH)
+    print("✅ Model loaded successfully.")
+except Exception as e:
+    print("❌ Error loading model:", str(e))
+    model = None
 
-# Step 3: Prediction route
+# 🔍 Prediction API
 @app.route("/predict", methods=["POST"])
 def predict():
-    try:
-        data = request.get_json()
-        features = data.get("features", [])
-        if not features or len(features) != 41:
-            return jsonify({"error": "Invalid input. Must contain 41 features."}), 400
+    if not model:
+        return jsonify({"error": "Model not loaded"}), 500
 
+    data = request.get_json()
+    features = data.get("features")
+
+    if not features or len(features) != 41:
+        return jsonify({"error": "Invalid input: must provide 41 features."}), 400
+
+    try:
         prediction = model.predict([features])[0]
         result = "phishing" if prediction == 1 else "legitimate"
         return jsonify({"result": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Step 4: Run the app
+# 🚀 Run server (for local testing)
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
